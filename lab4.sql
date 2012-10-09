@@ -1,11 +1,14 @@
+/* Creates the databse if it does not exist */
 CREATE DATABASE IF NOT EXISTS Timeshares;
 
 USE Timeshares;
 
+/* Drops any tables that exist */
 DROP TABLE IF EXISTS Schedule;
 DROP TABLE IF EXISTS Customer;
 DROP TABLE IF EXISTS Unit;
 
+/* Creates the databases */
 CREATE TABLE Customer (
 	CustomerID int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	FirstName varchar(50),
@@ -16,8 +19,7 @@ CREATE TABLE Customer (
 CREATE TABLE Unit ( 
 	UnitID int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	UnitName varchar(50),
-	UntiNumber varchar(5),
-	MaintenanceCost int(11),
+	UnitNumber varchar(5),
 	MaxWeeks int(11),
 	AnualMaintenenceCost int(11),
 	MaintenenceShare int(11)
@@ -28,3 +30,8 @@ CREATE TABLE Schedule (
 	CustomerID int(11) NOT NULL UNIQUE,
 	Week int(11)
 );
+
+/* Adds a generic user for the application to use */
+CREATE USER 'TimeshareUser'@'%' IDENTIFIED BY 'R78933jGtCKAWczM';
+GRANT ALL PRIVILEGES ON * . * TO 'TimeshareUser'@'%' IDENTIFIED BY 'R78933jGtCKAWczM' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+GRANT ALL PRIVILEGES ON `Timeshares` . * TO 'TimeshareUser'@'%';
