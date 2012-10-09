@@ -4,18 +4,16 @@ public class Unit {
 	
 	private String unitName;
 	private String unitNumber;
-	private int maintenanceCost;
 	private int maxWeeks;
 	private int anualMaintenenceCost;
 	private int maintenenceShare;
 	
 	
 	
-	public Unit(String unitName, String unitNumber, int maintenanceCost,
+	public Unit(String unitName, String unitNumber,
 			int maxWeeks, int anualMaintenenceCost, int maintenenceShare) {
 		this.unitName = unitName;
 		this.unitNumber = unitNumber;
-		this.maintenanceCost = maintenanceCost;
 		this.maxWeeks = maxWeeks;
 		this.anualMaintenenceCost = anualMaintenenceCost;
 		this.maintenenceShare = maintenenceShare;
@@ -31,12 +29,6 @@ public class Unit {
 	}
 	public void setUnitNumber(String unitNumber) {
 		this.unitNumber = unitNumber;
-	}
-	public int getMaintenanceCost() {
-		return maintenanceCost;
-	}
-	public void setMaintenanceCost(int maintenanceCost) {
-		this.maintenanceCost = maintenanceCost;
 	}
 	public int getMaxWeeks() {
 		return maxWeeks;
@@ -56,6 +48,4 @@ public class Unit {
 	public void setMaintenenceShare(int maintenenceShare) {
 		this.maintenenceShare = maintenenceShare;
 	}
-	
-	
 }
