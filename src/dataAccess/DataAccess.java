@@ -24,7 +24,7 @@ public class DataAccess implements DataAccessInterface {
 	/**
 	 * Stores the database name to connect to.
 	 */
-	private String mydatabase = "TestStationInterface";
+	private String mydatabase = "Timeshares";
 	/**
 	 * Stores the password to connect to the database with
 	 */
@@ -46,6 +46,8 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	private String username = "TimeshareUser";
 
+	private static DataAccess instance;
+
 	/**
 	 * Main constructor. Makes a connection to the MySQL server and initializes
 	 * the statement.
@@ -55,21 +57,38 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	private DataAccess() throws ClassNotFoundException, SQLException {
 		// Stores the credentials
-		url = "jdbc:mysql://" + serverName + "/" + mydatabase
-				+ "?autoReconnect=true&useUnicode=true&characterEncoding=utf8";
+		url = "jdbc:mysql://" + serverName + "/" + mydatabase;
 		try {
 			// Load the JDBC driver
 			Class.forName(driverName);
 			// Create a connection to the database
 			connection = DriverManager.getConnection(url, username, password);
 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 			throw new ClassNotFoundException(
 					"Was not able to load the MySQL DB Connector. Check the build path.",
 					e);
 		} catch (SQLException e) {
+			e.printStackTrace();
 			throw new SQLException(
-					"Was nto able to connect to the database. Check network connections.",
+					"Was not able to connect to the database. Check network connections.",
 					e);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	public void finalize() {
+		try {
+			connection.close();
+			connection = null;
+			url = "";
+			url = null;
+		} catch (SQLException e) {
 		}
 	}
 
@@ -149,10 +168,24 @@ public class DataAccess implements DataAccessInterface {
 	 * java.lang.String, int)
 	 */
 	@Override
-	public List<Unit> availableUnits(String name, String number, int weeks)
-			throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Customer> unitOwners(String name, String number, int weeks)throws SQLException {
+		List<Customer> customers = new ArrayList<Customer>();
+		ResultSet query;
+		try {
+			query = query("SELECT `FirstName`,`LastName`,`PhoneNumber` FROM Customer WHERE `CustomerID` IN (" +
+					"SELECT CustomerID FROM `Schedule` WHERE `UnitID`= " +
+						"(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'" +
+					") GROUP BY `Schedule`.`CustomerID` HAVING COUNT(Week) > "+weeks+")");
+			while (query.next()) {
+				customers.add(new Customer(query.getString(1), query
+						.getString(2), query.getString(3)));
+			}
+		} catch (SQLException e) {
+			System.err.println("Could not get the list of users");
+			e.printStackTrace();
+			return null;
+		}
+		return customers;
 	}
 
 	/*
@@ -163,10 +196,17 @@ public class DataAccess implements DataAccessInterface {
 	 * java.lang.String)
 	 */
 	@Override
-	public int getMaintenanceShares(String name, String number)
-			throws SQLException {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getMaintenanceShares(String name, String number) throws SQLException {
+		ResultSet query;
+		try{
+			query = query("SELECT `MaintenenceShare` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'");
+			query.next();
+			return Integer.parseInt(query.getString(1));
+		} catch (SQLException e) {
+			System.err.println("Could not get the list of users");
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	/*
@@ -237,12 +277,16 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public boolean createUnit(Unit unit) throws SQLException {
-		return execute("INSERT INTO `Unit` (`UnitName`,`UnitNumber`,`MaxWeeks`,`AnualMaintenanceCost`,`MaintenanceShare`) VALUES ('"
-				+ unit.getUnitName() + "','"
-				+ unit.getUnitNumber() + "','" 
-				+ unit.getMaxWeeks() + "','"
-				+ unit.getAnualMaintenenceCost() + "','"
-				+ unit.getMaintenenceShare() + "')");
+		return execute("INSERT INTO `Unit` (`UnitName`,`UnitNumber`,`MaxWeeks`,"
+				+ "`AnualMaintenenceCost`,`MaintenenceShare`) VALUES ('"
+				+ unit.getUnitName()
+				+ "','"
+				+ unit.getUnitNumber()
+				+ "','"
+				+ unit.getMaxWeeks()
+				+ "','"
+				+ unit.getAnualMaintenenceCost()
+				+ "','" + unit.getMaintenenceShare() + "')");
 	}
 
 	/*
@@ -252,18 +296,29 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public boolean createTimeShare(TimeShare timeshare) throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+		return execute("INSERT INTO `Schedule` (`UnitID`,`CustomerID`,`Week`) VALUES ("
+				// Gets the unit id from the database
+				+ "(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"
+				+ timeshare.getUnitName()
+				+ "' AND `UnitNumber`='"
+				+ timeshare.getUnitNumber()
+				+ "'),"
+				// Gets the customer id from the database
+				+ "(SELECT `CustomerID` FROM `Customer` WHERE `FirstName`='"
+				+ timeshare.getFirstName()
+				+ "' AND `LastName`='"
+				+ timeshare.getLastName() + "')," + timeshare.getWeek() + ")");
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Singleton method to get the instance of the database access
 	 * 
-	 * @see dataAccess.DataAccessInterface#getInstance()
+	 * @return
 	 */
-	@Override
-	public DataAccessInterface getInstance() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public static synchronized DataAccess getInstance()
+			throws ClassNotFoundException, SQLException {
+		if (instance == null)
+			instance = new DataAccess(); // Create the instance
+		return instance;
 	}
 }

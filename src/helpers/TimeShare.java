@@ -75,6 +75,8 @@ public class TimeShare {
 
 	public void setUnit(Unit unit) {
 		this.unit = unit;
+		this.unitName = unit.getUnitName();
+		this.unitNumber = unit.getUnitNumber();
 	}
 
 	public Customer getCustomer() {
@@ -83,6 +85,7 @@ public class TimeShare {
 
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
+		this.firstName = customer.getFirstName();
+		this.lastName = customer.getLastName();
 	}
-
 }
