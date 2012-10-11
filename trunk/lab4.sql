@@ -31,7 +31,13 @@ CREATE TABLE Schedule (
 	Week int(11)
 );
 
-/* Adds a generic user for the application to use */
-CREATE USER 'TimeshareUser'@'%' IDENTIFIED BY 'R78933jGtCKAWczM';
-GRANT ALL PRIVILEGES ON * . * TO 'TimeshareUser'@'%' IDENTIFIED BY 'R78933jGtCKAWczM' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
-GRANT ALL PRIVILEGES ON `Timeshares` . * TO 'TimeshareUser'@'%';
+
+ALTER TABLE `Schedule`
+  ADD CONSTRAINT `Schedule_ibfk_1` FOREIGN KEY (`UnitID`) REFERENCES `Unit` (`UnitID`),
+  ADD CONSTRAINT `Schedule_ibfk_2` FOREIGN KEY (`CustomerID`) REFERENCES `Customer` (`CustomerID`);
+
+/* Adds a generic user for the application to use *
+CREATE USER 'TimeshareUser'@'localhost' IDENTIFIED BY 'R78933jGtCKAWczM';
+GRANT ALL PRIVILEGES ON * . * TO 'TimeshareUser'@'localhost' IDENTIFIED BY 'R78933jGtCKAWczM' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+GRANT ALL PRIVILEGES ON `Timeshares` . * TO 'TimeshareUser'@'localhost';
+/* */

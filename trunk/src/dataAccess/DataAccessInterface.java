@@ -23,7 +23,7 @@ public interface DataAccessInterface {
 	 * @param weeks - week number
 	 * @return
 	 */
-	public List<Unit> availableUnits(String name, String number, int weeks) throws SQLException;
+	public List<Customer> unitOwners(String name, String number, int weeks) throws SQLException;
 	/**
 	 * Share of the maintenance for the unit	
 	 * @param name
@@ -34,7 +34,7 @@ public interface DataAccessInterface {
 	/**
 	 * Names of the people who own one or more weeks
 	 * @param unit
-	 * @return - gets the customers who own at least one chare of the unit
+	 * @return - gets the customers who own at least one share of the unit
 	 */
 	public List<Customer> getUnitCustomers(Unit unit) throws SQLException;
 	/**
@@ -52,7 +52,7 @@ public interface DataAccessInterface {
 	/**
 	 * Display who owns each unit during that week
 	 * @param week
-	 * @return what are owned by who durn the week specified
+	 * @return what is owned by who during the week specified
 	 */
 	public List<Unit> getCustomers(int week) throws SQLException;
 	
@@ -77,10 +77,4 @@ public interface DataAccessInterface {
 	 * @return - true if successful, false if not
 	 */
 	public boolean createTimeShare(TimeShare timeshare) throws SQLException;	
-	
-	/**
-	 * Singleton method to get the instance of the database access
-	 * @return
-	 */
-	public DataAccessInterface getInstance() throws SQLException;
 }
