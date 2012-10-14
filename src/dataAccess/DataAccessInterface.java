@@ -45,10 +45,10 @@ public interface DataAccessInterface {
 	public List<TimeShare> getTimeShares(Customer customer) throws SQLException;
 	/**
 	 * Display the owners in that unit sorted by week number
-	 * @param unit
+	 * @param unitName
 	 * @return - lists of the owners of the unit
 	 */
-	public List<Customer> getOwners(Unit unit) throws SQLException;
+	public List<Customer> getOwners(String unitName) throws SQLException;
 	/**
 	 * Display who owns each unit during that week
 	 * @param week
