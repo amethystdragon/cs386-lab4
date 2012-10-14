@@ -240,9 +240,29 @@ public class DataAccess implements DataAccessInterface {
 	 * @see dataAccess.DataAccessInterface#getOwners(helpers.Unit)
 	 */
 	@Override
-	public List<Customer> getOwners(Unit unit) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Customer> getOwners(String unitName) throws SQLException {
+		List<Customer> customers = new ArrayList<Customer>();
+		ResultSet query;
+		try {
+			query = query("select c.FirstName, c.LastName, c.PhoneNumber " +
+					"from Customer c " +
+					"where c.CustomerID = " +
+					"(select s.CustomerID " +
+					"from Schedule s " +
+					"where s.UnitID = " +
+					"(select u.UnitID from Unit u " +
+					"where u.name = " + unitName + "))");
+			while (query.next()) {
+				customers.add(new Customer(query.getString(1),
+						query.getString(2), query.getString(3)));
+			}
+		} catch (SQLException e) {
+			System.err.println("Could not get the list of customers owning " +
+					"this unit: " + unitName);
+			e.printStackTrace();
+			return null;
+		}
+		return customers;
 	}
 
 	/*
