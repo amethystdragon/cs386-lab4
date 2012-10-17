@@ -1,6 +1,7 @@
 package dataAccess;
 
 import helpers.Customer;
+import helpers.TimeShare;
 import helpers.Unit;
 
 import java.awt.BorderLayout;
@@ -51,9 +52,9 @@ public class GUIAccess extends JFrame{
 
 		// Create the ImageIcon picture
 		ImageIcon icon = new ImageIcon("beachCondo.jpg");
-		JLabel image = new JLabel(icon);
+		final JLabel image = new JLabel(icon);
 		myFrame.add(image, BorderLayout.CENTER);
-		
+
 		//Create the menu bar.
 		menuBar = new JMenuBar();
 
@@ -109,51 +110,82 @@ public class GUIAccess extends JFrame{
 		menuItem = new JMenuItem("Maintenance Shares");
 		menu.add(menuItem);
 
-		// Names the customers that own at least one week in a particular unit
 		menuItem = new JMenuItem("Unit Customers");
+		menu.add(menuItem);
+
+		// Displays the unit names, numbers and weeks owned by a customer
+		menuItem = new JMenuItem("Customer");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				List<Customer> customers = null;
-				String name = JOptionPane.showInputDialog("Please enter a unit name.");
+				List<TimeShare> data = null;
+				String name = JOptionPane.showInputDialog("Please enter a customer name.");
+				String[] split = new String[] {"", ""};
 				try {
-					customers = dataAccess.getOwners(name);
+					split = name.split(" ");
+					data = dataAccess.getTimeShares(new Customer(split[0], split[1], null));
 				} catch (SQLException sqle) {
 					JOptionPane.showMessageDialog(null, "Error in search");
 					sqle.printStackTrace();
 				}
 
-				JPanel custInfo = new JPanel(new GridLayout(0, 2));
-				if(customers != null) {
-					custInfo.add(new JLabel("Customer First Name"));
-					custInfo.add(new JLabel("Customer Last Name"));
+				JPanel custInfo = new JPanel(new GridLayout(0, 3));
+				custInfo.add(new JLabel("Unit Name"));
+				custInfo.add(new JLabel("Unit Number"));
+				custInfo.add(new JLabel("Weeks Leased"));
 
-					for(Customer c: customers) {
-						custInfo.add(new JLabel(c.getFirstName()));
-						custInfo.add(new JLabel(c.getLastName()));
+				if(data != null) {
+					for(TimeShare ts: data) {
+						//						custInfo.add(new JLabel(c[LAST_NAME]));
+						//						custInfo.add(new JLabel(c[FIRST_NAME]));
+						//						custInfo.add(new JLabel(c[WEEKS_OWNED]));
 					}
 				}
+				image.setVisible(false);
+				myFrame.add(new JLabel("Customer Name: " + split[1] + ", " + split[0]), BorderLayout.NORTH);
 				myFrame.add(custInfo, BorderLayout.CENTER);
 			}
 		});
-		
-		menuItem.setToolTipText("Names the people who own one or more weeks in a particular unit.");
-		menuItem.setArmed(true);
-		menu.add(menuItem);
-
-		menuItem = new JMenuItem("Customer");
-		menuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent ae) {
-				// TODO Update when method is completed
-			}
-		});
-		
 		menuItem.setToolTipText("Displays the unit names, numbers and weeks owned by particular customer.");
 		menuItem.setArmed(true);
 		menu.add(menuItem);
 
+		// Names the customers that own at least one week in a particular unit
 		menuItem = new JMenuItem("Unit");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				final int FIRST_NAME = 0;
+				final int LAST_NAME = 1;
+				final int WEEKS_OWNED = 2;
+				List<String[]> data = null;
+				String name = JOptionPane.showInputDialog("Please enter a unit name.");
+				try {
+					data = dataAccess.getOwners(name);
+				} catch (SQLException sqle) {
+					JOptionPane.showMessageDialog(null, "Error in search");
+					sqle.printStackTrace();
+				}
+
+				JPanel custInfo = new JPanel(new GridLayout(0, 3));
+				custInfo.add(new JLabel("Customer Last Name"));
+				custInfo.add(new JLabel("Customer First Name"));
+				custInfo.add(new JLabel("Total Weeks Leased"));
+
+				if(data != null) {
+					for(String[] c: data) {
+						custInfo.add(new JLabel(c[LAST_NAME]));
+						custInfo.add(new JLabel(c[FIRST_NAME]));
+						custInfo.add(new JLabel(c[WEEKS_OWNED]));
+					}
+				}
+				image.setVisible(false);
+				myFrame.add(new JLabel("Unit Name: " + name), BorderLayout.NORTH);
+				myFrame.add(custInfo, BorderLayout.CENTER);
+			}
+		});
+		menuItem.setToolTipText("Names the people who own one or more weeks in a particular unit.");
+		menuItem.setArmed(true);
 		menu.add(menuItem);
 
 		menuItem = new JMenuItem("Week Shares");
@@ -163,6 +195,7 @@ public class GUIAccess extends JFrame{
 		myFrame.pack();
 		myFrame.setVisible(true);
 	}
+
 	public static void main(String args[]){
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

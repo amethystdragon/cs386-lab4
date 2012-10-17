@@ -48,7 +48,7 @@ public interface DataAccessInterface {
 	 * @param unitName
 	 * @return - lists of the owners of the unit
 	 */
-	public List<Customer> getOwners(String unitName) throws SQLException;
+	public List<String[]> getOwners(String unitName) throws SQLException;
 	/**
 	 * Display who owns each unit during that week
 	 * @param week
