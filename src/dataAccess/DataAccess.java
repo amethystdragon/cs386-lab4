@@ -229,8 +229,23 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public List<TimeShare> getTimeShares(Customer customer) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+		List<TimeShare> timeShares = new ArrayList<TimeShare>();
+		ResultSet query;
+		try{
+			query = query("select c.FirstName, c.LastName, u.Name, u.Number, s.Week " +
+					"from Customer c, Unit u, Schedule s " +
+					"where ");
+
+			while(query.next()){
+				timeShares.add(new TimeShare(query.getString(1), query.getString(2), query.getString(3), 
+						query.getString(4), query.getInt(5))); // Timeshare(firstname, lastname, unitname, unitnumber, week)
+			}
+		} catch (SQLException e) {
+			System.err.println("Error in timeshare query for customer: " + customer);
+			e.printStackTrace();
+			timeShares = null;
+		}
+		return timeShares;
 	}
 
 	/*
@@ -244,7 +259,7 @@ public class DataAccess implements DataAccessInterface {
 		List<String[]> info = new ArrayList<String[]>();
 		ResultSet query;
 		try {
-			query = query("select distinct c.FirstName, c.LastName, count(c.FirstName)" +
+			query = query("select distinct c.FirstName, c.LastName, count(c.LastName)" +
 					"from Customer c " +
 					"where c.CustomerID = " +
 					"(select s.CustomerID " +
@@ -345,3 +360,4 @@ public class DataAccess implements DataAccessInterface {
 		return instance;
 	}
 }
+
