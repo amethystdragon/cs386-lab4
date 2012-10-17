@@ -229,23 +229,23 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public List<TimeShare> getTimeShares(Customer customer) throws SQLException {
-		List<TimeShare> timeShares = new ArrayList<TimeShare>();
-		ResultSet query;
-		try{
-			query = query("select c.FirstName, c.LastName, u.Name, u.Number, s.Week " +
-					"from Customer c, Unit u, Schedule s " +
-					"where ");
-
-			while(query.next()){
-				timeShares.add(new TimeShare(query.getString(1), query.getString(2), query.getString(3), 
-						query.getString(4), query.getInt(5))); // Timeshare(firstname, lastname, unitname, unitnumber, week)
-			}
-		} catch (SQLException e) {
-			System.err.println("Error in timeshare query for customer: " + customer);
-			e.printStackTrace();
-			timeShares = null;
-		}
-		return timeShares;
+//		List<TimeShare> timeShares = new ArrayList<TimeShare>();
+//		ResultSet query;
+//		try{
+//			query = query("select c.FirstName, c.LastName, u.Name, u.Number, s.Week " +
+//					"from Customer c, Unit u, Schedule s " +
+//					"where ");
+//
+//			while(query.next()){
+//				timeShares.add(new TimeShare(query.getString(1), query.getString(2), query.getString(3), 
+//						query.getString(4), query.getInt(5))); // Timeshare(firstname, lastname, unitname, unitnumber, week)
+//			}
+//		} catch (SQLException e) {
+//			System.err.println("Error in timeshare query for customer: " + customer);
+//			e.printStackTrace();
+//			timeShares = null;
+//		}
+		return null;
 	}
 
 	/*
