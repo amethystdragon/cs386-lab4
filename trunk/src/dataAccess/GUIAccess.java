@@ -21,6 +21,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -29,6 +31,8 @@ public class GUIAccess extends JFrame{
 
 	private static final long serialVersionUID = 1L;
 	private static DataAccess dataAccess;
+	JPanel custInfo = null;
+	JLabel header = null;
 
 	public GUIAccess() {
 		// Get the data access instance
@@ -119,7 +123,7 @@ public class GUIAccess extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				List<TimeShare> data = null;
-				String name = JOptionPane.showInputDialog("Please enter a customer name.");
+				String name = JOptionPane.showInputDialog("Please enter a customer first and last name.");
 				String[] split = new String[] {"", ""};
 				try {
 					split = name.split(" ");
@@ -127,22 +131,25 @@ public class GUIAccess extends JFrame{
 				} catch (SQLException sqle) {
 					JOptionPane.showMessageDialog(null, "Error in search");
 					sqle.printStackTrace();
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null, "Error in search");
 				}
 
-				JPanel custInfo = new JPanel(new GridLayout(0, 3));
+				custInfo = new JPanel(new GridLayout(0, 3));
 				custInfo.add(new JLabel("Unit Name"));
 				custInfo.add(new JLabel("Unit Number"));
-				custInfo.add(new JLabel("Weeks Leased"));
+				custInfo.add(new JLabel("Week Leased"));
 
 				if(data != null) {
 					for(TimeShare ts: data) {
-						//						custInfo.add(new JLabel(c[LAST_NAME]));
-						//						custInfo.add(new JLabel(c[FIRST_NAME]));
-						//						custInfo.add(new JLabel(c[WEEKS_OWNED]));
+						custInfo.add(new JLabel(ts.getUnitName()));
+						custInfo.add(new JLabel(ts.getUnitNumber()));
+						custInfo.add(new JLabel("" + ts.getWeek()));
 					}
+					header = new JLabel("Customer Name: " + split[1] + ", " + split[0]);
 				}
 				image.setVisible(false);
-				myFrame.add(new JLabel("Customer Name: " + split[1] + ", " + split[0]), BorderLayout.NORTH);
+				myFrame.add(header, BorderLayout.NORTH);
 				myFrame.add(custInfo, BorderLayout.CENTER);
 			}
 		});
@@ -166,8 +173,7 @@ public class GUIAccess extends JFrame{
 					JOptionPane.showMessageDialog(null, "Error in search");
 					sqle.printStackTrace();
 				}
-
-				JPanel custInfo = new JPanel(new GridLayout(0, 3));
+				custInfo = new JPanel(new GridLayout(0, 3));
 				custInfo.add(new JLabel("Customer Last Name"));
 				custInfo.add(new JLabel("Customer First Name"));
 				custInfo.add(new JLabel("Total Weeks Leased"));
@@ -180,7 +186,8 @@ public class GUIAccess extends JFrame{
 					}
 				}
 				image.setVisible(false);
-				myFrame.add(new JLabel("Unit Name: " + name), BorderLayout.NORTH);
+				header = new JLabel("Unit Name: " + name);
+				myFrame.add(header, BorderLayout.NORTH);
 				myFrame.add(custInfo, BorderLayout.CENTER);
 			}
 		});
