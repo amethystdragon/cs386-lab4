@@ -174,7 +174,7 @@ public class DataAccess implements DataAccessInterface {
 		try {
 			query = query("SELECT `FirstName`,`LastName`,`PhoneNumber` FROM Customer WHERE `CustomerID` IN (" +
 					"SELECT CustomerID FROM `Schedule` WHERE `UnitID`= " +
-						"(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'" +
+					"(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'" +
 					") GROUP BY `Schedule`.`CustomerID` HAVING COUNT(Week) > "+weeks+")");
 			while (query.next()) {
 				customers.add(new Customer(query.getString(1), query
@@ -229,23 +229,8 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public List<TimeShare> getTimeShares(Customer customer) throws SQLException {
-		List<TimeShare> timeShares = new ArrayList<TimeShare>();
-		ResultSet query;
-		try{
-			query = query("select c.FirstName, c.LastName, u.Name, u.Number, s.Week " +
-							"from Customer c, Unit u, Schedule s " +
-							"where ");
-			
-			while(query.next()){
-				timeShares.add(new TimeShare(query.getString(1), query.getString(2), query.getString(3), 
-								query.getString(4), query.getInt(5))); // Timeshare(firstname, lastname, unitname, unitnumber, week)
-			}
-		} catch (SQLException e) {
-			System.err.println("Error in timeshare query for customer: " + customer);
-			e.printStackTrace();
-			timeShares = null;
-		}
-		return timeShares;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/*
@@ -255,21 +240,21 @@ public class DataAccess implements DataAccessInterface {
 	 * @see dataAccess.DataAccessInterface#getOwners(helpers.Unit)
 	 */
 	@Override
-	public List<Customer> getOwners(String unitName) throws SQLException {
-		List<Customer> customers = new ArrayList<Customer>();
+	public List<String[]> getOwners(String unitName) throws SQLException {
+		List<String[]> info = new ArrayList<String[]>();
 		ResultSet query;
 		try {
-			query = query("select c.FirstName, c.LastName, c.PhoneNumber " +
+			query = query("select distinct c.FirstName, c.LastName, count(c.FirstName)" +
 					"from Customer c " +
 					"where c.CustomerID = " +
 					"(select s.CustomerID " +
 					"from Schedule s " +
 					"where s.UnitID = " +
 					"(select u.UnitID from Unit u " +
-					"where u.name = " + unitName + "))");
+					"where u.unitName like '" + unitName + "'));");
 			while (query.next()) {
-				customers.add(new Customer(query.getString(1),
-						query.getString(2), query.getString(3)));
+				info.add(new String[] {query.getString(1),
+						query.getString(2), query.getString(3)});
 			}
 		} catch (SQLException e) {
 			System.err.println("Could not get the list of customers owning " +
@@ -277,7 +262,7 @@ public class DataAccess implements DataAccessInterface {
 			e.printStackTrace();
 			return null;
 		}
-		return customers;
+		return info;
 	}
 
 	/*
