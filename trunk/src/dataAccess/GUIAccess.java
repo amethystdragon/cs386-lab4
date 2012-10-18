@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -24,16 +23,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class GUIAccess extends JFrame{
+/**
+ * Main user interface for the timeshare database.
+ * 
+ */
+public class GUIAccess extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static DataAccess dataAccess;
-	private static JPanel resultsPanel = null;
-	private static JTextArea resultTextArea = null;
+	private static JTextPane resultTextField = null;
 
 	public GUIAccess() {
 		// Get the data access instance
@@ -45,13 +48,13 @@ public class GUIAccess extends JFrame{
 			sqle.printStackTrace();
 		}
 
-		//Where the GUI is created:
+		// Where the GUI is created:
 		JMenuBar menuBar;
 		JMenu menu;
 		JMenuItem menuItem;
 
 		final JFrame myFrame = new JFrame("CondoShare");
-		myFrame.setSize(1500,1000);
+		myFrame.setSize(1500, 1000);
 		myFrame.setLayout(new BorderLayout());
 		myFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -60,14 +63,13 @@ public class GUIAccess extends JFrame{
 		final JLabel image = new JLabel(icon);
 		myFrame.add(image, BorderLayout.CENTER);
 
-		//Create the menu bar.
+		// Create the menu bar.
 		menuBar = new JMenuBar();
 
-		//Build the first menu.
+		// Build the first menu.
 		menu = new JMenu("Import");
 		menuBar.add(menu);
 
-		
 		// IMPORTING
 		menuItem = new JMenuItem("Select File...");
 		menuItem.setToolTipText("Choose the file in which you would like to read data from.");
@@ -80,48 +82,54 @@ public class GUIAccess extends JFrame{
 				int returnVal = chooser.showOpenDialog(null);
 
 				JTextArea text = new JTextArea();
-				
-				if(returnVal == JFileChooser.APPROVE_OPTION) {
+
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
-					//Parses the file for each unit, customer, and timeshare
+					// Parses the file for each unit, customer, and timeshare
 					List<Unit> units = DataParser.parseUnit(file);
 					List<Customer> customers = DataParser.parseCustomer(file);
 					List<TimeShare> timeshares = DataParser.parseShares(file);
 
-					//Adds each unit to the database and the text field
-					text.setText(text.getText()+"==Unit==\n");
+					// Adds each unit to the database and the text field
+					text.setText(text.getText() + "==Unit==\n");
 					try {
-						for(Unit u : units){
+						for (Unit u : units) {
 							DataAccess.getInstance().createUnit(u);
-							text.setText(text.getText()+"Parsed: "+u.toString()+'\n');
+							text.setText(text.getText() + "Parsed: "
+									+ u.toString() + '\n');
 						}
-					} catch (Exception e) {
-						text.setText(text.getText()+"Unable to parse units!\n");
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()
+								+ "Unable to parse units!\n");
 					}
-					
-					//Adds each customer to the database and the text field
-					text.setText(text.getText()+"==Customer==\n");
+
+					// Adds each customer to the database and the text field
+					text.setText(text.getText() + "==Customer==\n");
 					try {
-						for(Customer c : customers){
+						for (Customer c : customers) {
 							DataAccess.getInstance().createUser(c);
-							text.setText(text.getText()+"Parsed: "+c.toString()+'\n');
+							text.setText(text.getText() + "Parsed: "
+									+ c.toString() + '\n');
 						}
-					} catch (Exception e) {
-						text.setText(text.getText()+"Unable to parse customers!\n");
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()
+								+ "Unable to parse customers!\n");
 					}
-					
-					//Adds each timeshare to the database and the text field
-					text.setText(text.getText()+"==Timeshare==\n");
+
+					// Adds each timeshare to the database and the text field
+					text.setText(text.getText() + "==Timeshare==\n");
 					try {
-						for(TimeShare t : timeshares){
+						for (TimeShare t : timeshares) {
 							DataAccess.getInstance().createTimeShare(t);
-							text.setText(text.getText()+"Parsed: "+t.toString()+'\n');
+							text.setText(text.getText() + "Parsed: "
+									+ t.toString() + '\n');
 						}
-					} catch (Exception e) {
-						text.setText(text.getText()+"Unable to parse timeshares!\n");
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()
+								+ "Unable to parse timeshares!\n");
 					}
-					
-					//Adds the frame to the window
+
+					// Adds the frame to the window
 					myFrame.add(text, BorderLayout.CENTER);
 					image.setVisible(false);
 				}
@@ -133,222 +141,307 @@ public class GUIAccess extends JFrame{
 		menu = new JMenu("Reports");
 		menuBar.add(menu);
 
-		//a group of JMenuItems
-		
-		
-		//List the names and phone numbers of the owners of all units in alphabetical order
-		//by last name, when two owners have the same last name, order by first name.		
-		menuItem = new JMenuItem("List all Customers");
-		menuItem.setToolTipText("Present a list of the names of people who own any timeshares sorted Alphabetically.");
+		// a group of JMenuItems
+		menuItem = new JMenuItem("List of Customers");
+		menuItem.setToolTipText("Present a list of the names of customers.");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				List<Customer> data = null;
-				String col1 = "Last Name", col2 = "First Name", col3 = "Phone #";
-		        String results = "All Timeshare Customers:\n";
-		        results += String.format("%-52s %-52s %-15s \n", col1, col2, col3); //unitname, unitnumber, week#
-				try{
-					data = dataAccess.getAllCustomers();
-					if(data != null){
-						Collections.sort(data);
-			        	for(Customer customer : data){
-			        		results += String.format("%-52s %-52s %-15s \n", 
-			        				customer.getLastName(), customer.getFirstName(), customer.getPhoneNumber());
-			        	}
-		        	}
-				}catch (SQLException sqle) {
-					JOptionPane.showMessageDialog(null, "Error in search");
-					sqle.printStackTrace();}
-			        
-				if(resultsPanel == null || resultTextArea == null){
-					resultsPanel = new JPanel();
-					resultTextArea = new JTextArea();
-					image.setVisible(false);
-					myFrame.add(resultsPanel, BorderLayout.CENTER);
-					resultsPanel.add(resultTextArea);
+				String result = "Customer Last Name, First Name - Phone Number\n";
+				try {
+					List<Customer> customers = DataAccess.getInstance()
+							.getAllCustomers();
+					for (Customer c : customers)
+						result += c.getLastName() + ", " + c.getFirstName()
+								+ " - " + c.getPhoneNumber() + '\n';
+				} catch (ClassNotFoundException | SQLException e) {
+					result = "Not able to get a list of customers.";
+					e.printStackTrace();
 				}
-				resultTextArea.setText(results);
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				if(result.equals("Customer Last Name, First Name - Phone Number\n")) result = "Was not able to get a list of customers.";
+				resultTextField.setText(result);
 			}
 		});
-		menu.add(menuItem);//end list all customers
+		menu.add(menuItem);
 
-		//Must add actionListeners to these buttons. Might only need 1 that uses switch-case
-		
-		//Prompt the user for a unit name (e.g. Evergreen) and number (e.g. 3), and a
-		//minimum number of weeks owned. Present a list of the names of people who own
-		//at least that many weeks in the particular unit.		
+		// Must add actionListeners to these buttons. Might only need 1 that
+		// uses switch-case
 		menuItem = new JMenuItem("Unit Owners");
-		menuItem.setToolTipText("Names of people who own at least that many " +
-				"weeks in the particular unit.");
+		menuItem.setToolTipText("Names of people who own at least that many weeks in the particular unit.");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				String unitName = JOptionPane
+						.showInputDialog("Please enter a unit name.");
+				String unitNumber = JOptionPane
+						.showInputDialog("Please enter a unit number.");
+				int weeks = Integer.parseInt(JOptionPane
+						.showInputDialog("Please enter a week."));
+
+				String result = "Customer Last Name, First Name\n";
+				try {
+					List<Customer> customers = DataAccess.getInstance()
+							.unitOwners(unitName, unitNumber, weeks);
+					for (Customer c : customers)
+						result += c.getLastName() + ", " + c.getFirstName()
+								+ '\n';
+				} catch (ClassNotFoundException | SQLException e) {
+					result = "Not able to get a list of customers.";
+					e.printStackTrace();
+				}
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				if(result.equals("Customer Last Name, First Name\n")) result = "Was not able to get a list of customers for unit: "+unitName+" - "+unitNumber;
+				resultTextField.setText(result);
+			}
+		});
 		menu.add(menuItem);
 
-		//Record with each unit the annual cost of maintenance for that unit. Prompt the
-		//user for the unit name and number for a particular unit and print out the share of
-		//the maintenance that each of the owners is responsible for. Have the owners
-		//displayed in alphabetical order.		
+		/* ADDING THE MAINTENANCE SHARE REPORTS */
 		menuItem = new JMenuItem("Maintenance Shares");
-		//TODO
-		menu.add(menuItem);
-		
-		//Prompt the user for a unit name and report the names of the people who own one
-		//or more weeks in that unit and how many weeks they own		
-		menuItem = new JMenuItem("Unit Customers");
-		//TODO
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				String result = "";
+				String unitName = JOptionPane
+						.showInputDialog("Please enter a unit name.");
+				String unitNumber = JOptionPane
+						.showInputDialog("Please enter a unit number.");
+
+				try {
+					int price = DataAccess.getInstance().getMaintenanceShares(
+							unitName, unitNumber);
+					result = "Unit: " + unitName + "-" + unitNumber + "\t$"
+							+ price;
+				} catch (ClassNotFoundException | SQLException e) {
+					result = "Not able to get the maintenance share for: "
+							+ unitName + "-" + unitNumber;
+					e.printStackTrace();
+				}
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				resultTextField.setText(result);
+			}
+		});
 		menu.add(menuItem);
 
-		// Prompt the user for a name and provide a unit names, numbers, and week
-		//numbers that that person owns.
+		/* ADDING THE UNIT CUSTOMER REPORTS */
+		menuItem = new JMenuItem("Unit Customers");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				String result = "";
+				String unitName = JOptionPane
+						.showInputDialog("Please enter a unit name.");
+				String unitNumber = JOptionPane
+						.showInputDialog("Please enter a unit number.");
+
+				try {
+					List<Customer> customers = DataAccess.getInstance()
+							.getUnitCustomers(
+									new Unit(unitName, unitNumber, 0, 0, 0));
+					result = "Unit: " + unitName + "-" + unitNumber
+							+ "\nCustomer Last Name, First Name\n";
+					for (Customer c : customers)
+						result += c.getLastName() + ", " + c.getFirstName()
+								+ '\n';
+				} catch (ClassNotFoundException | SQLException e) {
+					result = "Not able to get the list of customers for: "
+							+ unitName + "-" + unitNumber;
+					e.printStackTrace();
+				}
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				resultTextField.setText(result);
+			}
+		});
+		menu.add(menuItem);
+
+		// Displays the unit names, numbers and weeks owned by a customer
 		menuItem = new JMenuItem("Customer");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-					JPanel namePanel = new JPanel();  
-				    JTextField fNameField = new JTextField("First Name", 50);  
-				    namePanel.add(fNameField);  
-				    JTextField lNameField = new JTextField("Last Name", 50);  
-				    namePanel.add(lNameField);  
-				    int value = JOptionPane.showConfirmDialog(null, namePanel, "Enter Name to Query Customer Timeshare Information",
-				    											JOptionPane.OK_CANCEL_OPTION);  
-				    if (value == JOptionPane.OK_OPTION)  
-				    {  
-				        String fName = fNameField.getText();  
-				        String lName = lNameField.getText();  
-				        Customer searchCustomer = new Customer(fName, lName, null);
-				        String col1 = "Unit Name", col2 = "Unit #", col3 = "Week #";
-				        String results = "For Customer: " + fName + " " + lName + "\n";
-				        results += String.format("%-55s %-15s %-15s \n", col1, col2, col3); //unitname, unitnumber, week#
-				        List<TimeShare> data = null;
-				        try{
-				        	data = dataAccess.getTimeShares(searchCustomer);
-				        	if(data != null){
-					        	for(TimeShare share : data){
-					        		results += String.format("%-55s %-15s %-15i \n", 
-					        				share.getUnitName(), share.getUnitNumber(), Integer.toString(share.getWeek()));
-					        	}
-				        	}
-				        }catch (SQLException sqle) {
-						JOptionPane.showMessageDialog(null, "Error in search");
-						sqle.printStackTrace();}
-				        
-						if(resultsPanel == null || resultTextArea == null){
-							resultsPanel = new JPanel();
-							resultTextArea = new JTextArea();
-							image.setVisible(false);
-							myFrame.add(resultsPanel, BorderLayout.CENTER);
-							resultsPanel.add(resultTextArea);
+				JPanel namePanel = new JPanel();
+				JTextField fNameField = new JTextField("First Name", 50);
+				namePanel.add(fNameField);
+				JTextField lNameField = new JTextField("Last Name", 50);
+				namePanel.add(lNameField);
+				int value = JOptionPane.showConfirmDialog(null, namePanel,
+						"Enter Name to Query Customer Timeshare Information",
+						JOptionPane.OK_CANCEL_OPTION);
+				if (value == JOptionPane.OK_OPTION) {
+					String fName = fNameField.getText();
+					String lName = lNameField.getText();
+					Customer searchCustomer = new Customer(fName, lName, null);
+					String col1 = "Unit Name", col2 = "Unit #", col3 = "Week #";
+					String results = "For Customer: " + lName + ", " + fName
+							+ "\n";
+					results += "Unit Name: Unit Number - Week#\n";
+					List<TimeShare> data = null;
+					try {
+						data = dataAccess.getTimeShares(searchCustomer);
+						if (data != null) {
+							for (TimeShare share : data) {
+								results += share.getUnitName()+": "+
+										share.getUnitNumber()+" - "+
+										Integer.toString(share.getWeek())+'\n';
+							}
 						}
-						resultTextArea.setText(results);
+					} catch (SQLException sqle) {
+						results = "Error getting customers.";
+						sqle.printStackTrace();
+					}
 
-				        
-				    }  
-				
+					if (resultTextField == null) {
+						resultTextField = new JTextPane();
+						image.setVisible(false);
+						myFrame.add(resultTextField, BorderLayout.CENTER);
+					}
+					resultTextField.setText(results);
+				}
 			}
 		});
 		menuItem.setToolTipText("Displays the unit names, numbers and weeks owned by particular customer.");
 		menu.add(menuItem);
 
-		//Prompt the user for a unit name and report the names of the people who own one
-		//or more weeks in that unit and how many weeks they own
+		// Names the customers that own at least one week in a particular unit
 		menuItem = new JMenuItem("Unit Owners");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				JPanel unitPanel = new JPanel();  
-			    JTextField unitField = new JTextField("Unit Name", 50);  
-			    unitPanel.add(unitField);  
-			    int value = JOptionPane.showConfirmDialog(null, unitPanel, "Enter Name of Unit to query Timeshare Owners",
-			    											JOptionPane.OK_CANCEL_OPTION);  
-			    if (value == JOptionPane.OK_OPTION)  
-			    {  
-			        String unitName = unitField.getText();  
-			        String col1 = "First Name", col2 = "Last Name", col3 = "Weeks Owned";
-			        String results = "For Unit: " + unitName + "\n";
-			        results += String.format("%-55s %-55s %-15s \n", col1, col2, col3); 
-//			        List<String[]> data = null;
-//			        try {
-//						data = dataAccess.getOwners(unitName);
-//						if(data != null){
-//				        	for(String[] str : data){
-//				        		results += String.format("%-55s %-55s %-15s \n", str[0], str[1], str[2]);
-//				        	}
-//						}
-//					} catch (SQLException sqle) {JOptionPane.showMessageDialog(null, "Error in search");
-//					sqle.printStackTrace();}
-			        
-			        if(resultsPanel == null || resultTextArea == null){
-						resultsPanel = new JPanel();
-						resultTextArea = new JTextArea();
-						image.setVisible(false);
-						myFrame.add(resultsPanel, BorderLayout.CENTER);
-						resultsPanel.add(resultTextArea);
+				JPanel unitPanel = new JPanel();
+				JTextField unitField = new JTextField("Unit Name", 50);
+				unitPanel.add(unitField);
+				int value = JOptionPane.showConfirmDialog(null, unitPanel,
+						"Enter Name of Unit to query Timeshare Owners",
+						JOptionPane.OK_CANCEL_OPTION);
+				if (value == JOptionPane.OK_OPTION) {
+					String unitName = unitField.getText();
+					String col1 = "First Name", col2 = "Last Name", col3 = "Weeks Owned";
+					String results = "For Unit: " + unitName + "\n";
+					results += String.format("%s, %s - %s \n", col2,
+							col1, col3);
+					List<String[]> data = null;
+					try {
+						data = dataAccess.getOwners(unitName);
+						if (data != null) {
+							for (String[] str : data) {
+								results += String.format(
+										"%s, %s - %s \n", str[1], str[0],
+										str[2]);
+							}
+						}
+					} catch (SQLException sqle) {
+						JOptionPane.showMessageDialog(null, "Error in search");
+						sqle.printStackTrace();
 					}
-					resultTextArea.setText(results);      
-			    }
+
+					if (resultTextField == null) {
+						resultTextField = new JTextPane();
+						image.setVisible(false);
+						myFrame.add(resultTextField, BorderLayout.CENTER);
+					}
+					resultTextField.setText(results);
+				}
 			}
 		});
 		menuItem.setToolTipText("Names the people who own one or more weeks in a particular unit.");
 		menu.add(menuItem);
 
+		// Names the customers that own at least one week in a particular unit
 		menuItem = new JMenuItem("Unit");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				// TODO Update when method is completed
+				final int FIRST_NAME = 0;
+				final int LAST_NAME = 1;
+				final int WEEKS_OWNED = 2;
+				List<String[]> data = null;
+				String name = JOptionPane
+						.showInputDialog("Please enter a unit name.");
+				try {
+					data = dataAccess.getOwners(name);
+				} catch (SQLException sqle) {
+					JOptionPane.showMessageDialog(null, "Error in search");
+					sqle.printStackTrace();
+				}
+				String result = "Customer Last Name, First Name - Total Weeks Leased\n";
+
+				if (data != null) {
+					for (String[] c : data) {
+						result += c[LAST_NAME] + ", " + c[FIRST_NAME] + " - "
+								+ c[WEEKS_OWNED] + '\n';
+					}
+				}
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				if (result.isEmpty())
+					result = "No customers found for that unit.";
+				resultTextField.setText(result);
 			}
 		});
 		menu.add(menuItem);
 
-		//Prompt the user for a week number and display who owns each unit during that
-		//week.
+		/* ADDING THE WEEK SHARE REPORTS */
 		menuItem = new JMenuItem("Week Shares");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				JPanel weekPanel = new JPanel();  
-			    JTextField weekField = new JTextField("Week #", 10);  
-			    weekPanel.add(weekField);  
-			    int value = JOptionPane.showConfirmDialog(null, weekPanel, "Enter week # to query",
-			    											JOptionPane.OK_CANCEL_OPTION);  
-			    if (value == JOptionPane.OK_OPTION)  
-			    {  
-			        String week = weekField.getText();  
-			        String col1 = "Last Name", col2 = "First Name", col3 = "Unit Name", col4 = "Unit #";
-			        String results = "For Week#: " + week + "\n";
-			        results += String.format("%-32s %-32s %-32s %-10s \n", col1, col2, col3, col4); 
-			        List<String[]> data = null;
-			        try {
-						data = dataAccess.getCustomers(Integer.parseInt(week));
-						if(data != null){
-				        	for(String[] str : data){
-				        		results += String.format("%-40s %-40s %-40s %-12s \n", str[0], str[1], str[2], str[3]);
-				        	}
-						}
-					} catch (SQLException sqle) {JOptionPane.showMessageDialog(null, "Error in search");
-					sqle.printStackTrace();}
-			        
-			        if(resultsPanel == null || resultTextArea == null){
-						resultsPanel = new JPanel();
-						resultTextArea = new JTextArea();
-						image.setVisible(false);
-						myFrame.add(resultsPanel, BorderLayout.CENTER);
-						resultsPanel.add(resultTextArea);
+				String result = "";
+				String week = JOptionPane
+						.showInputDialog("Please input a week number (1-52)");
+				try {
+					List<String> customers = DataAccess.getInstance()
+							.getCustomers(Integer.parseInt(week));
+					for (String s : customers) {
+						result += s;
 					}
-					resultTextArea.setText(results);        
-			    }
+				} catch (NumberFormatException | ClassNotFoundException
+						| SQLException e) {
+					result = "Was unable to get a list of the customers for week: "
+							+ week + '\n';
+					e.printStackTrace();
+				}
+
+				if (resultTextField == null) {
+					resultTextField = new JTextPane();
+					image.setVisible(false);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
+				}
+				if (result.isEmpty())
+					result = "No customers found for that week.";
+				resultTextField.setText(result);
 			}
 		});
 		menu.add(menuItem);
-
 		myFrame.setJMenuBar(menuBar);
-		//myFrame.pack();
-		myFrame.setResizable(false);
+		myFrame.pack();
 		myFrame.setVisible(true);
 	}
 
-	public static void main(String args[]){
+	public static void main(String args[]) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception ignored) {}
+		} catch (Exception ignored) {
+		}
 		new GUIAccess();
 	}
 }
