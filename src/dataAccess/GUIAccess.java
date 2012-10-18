@@ -32,7 +32,7 @@ public class GUIAccess extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private static DataAccess dataAccess;
 	private static JPanel resultsPanel = null;
-	private static JTextField resultTextArea = null;
+	private static JTextField resultTextField = null;
 
 	public GUIAccess() {
 		// Get the data access instance
@@ -185,14 +185,12 @@ public class GUIAccess extends JFrame{
 					JOptionPane.showMessageDialog(null, "Error in search");
 					sqle.printStackTrace();}
 			        
-					if(resultsPanel == null || resultTextArea == null){
-						resultsPanel = new JPanel();
-						resultTextArea = new JTextField();
+			        if(resultsPanel == null || resultTextField == null){
+						resultTextField = new JTextField();
 						image.setVisible(false);
-						myFrame.add(resultsPanel, BorderLayout.CENTER);
-						resultsPanel.add(resultTextArea);
+						myFrame.add(resultTextField, BorderLayout.CENTER);
 					}
-					resultTextArea.setText(results);
+					resultTextField.setText(results);
 
 			        
 			    }  
@@ -228,14 +226,12 @@ public class GUIAccess extends JFrame{
 //					} catch (SQLException sqle) {JOptionPane.showMessageDialog(null, "Error in search");
 //					sqle.printStackTrace();}
 			        
-			        if(resultsPanel == null || resultTextArea == null){
-						resultsPanel = new JPanel();
-						resultTextArea = new JTextField();
+			        if(resultsPanel == null || resultTextField == null){
+						resultTextField = new JTextField();
 						image.setVisible(false);
-						myFrame.add(resultsPanel, BorderLayout.CENTER);
-						resultsPanel.add(resultTextArea);
+						myFrame.add(resultTextField, BorderLayout.CENTER);
 					}
-					resultTextArea.setText(results);        
+					resultTextField.setText(results);        
 			    }
 			}
 		});
@@ -267,15 +263,14 @@ public class GUIAccess extends JFrame{
 					e.printStackTrace();
 				}
 				
-		        if(resultsPanel == null || resultTextArea == null){
-					resultsPanel = new JPanel();
-					resultTextArea = new JTextField();
+		        if(resultsPanel == null || resultTextField == null){
+					resultTextField = new JTextField();
+					
 					image.setVisible(false);
-					myFrame.add(resultsPanel, BorderLayout.CENTER);
-					resultsPanel.add(resultTextArea);
+					myFrame.add(resultTextField, BorderLayout.CENTER);
 				}
 		        if(result.isEmpty()) result = "No customers found for that week.";
-				resultTextArea.setText(result);   
+				resultTextField.setText(result);   
 			}
 		});
 		menu.add(menuItem);
