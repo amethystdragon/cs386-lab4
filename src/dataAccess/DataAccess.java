@@ -174,7 +174,7 @@ public class DataAccess implements DataAccessInterface {
 		try {
 			query = query("SELECT `FirstName`,`LastName`,`PhoneNumber` FROM Customer WHERE `CustomerID` IN (" +
 					"SELECT CustomerID FROM `Schedule` WHERE `UnitID`= " +
-					"(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'" +
+						"(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"+name+"' AND `UnitNumber`='"+number+"'" +
 					") GROUP BY `Schedule`.`CustomerID` HAVING COUNT(Week) > "+weeks+")");
 			while (query.next()) {
 				customers.add(new Customer(query.getString(1), query
@@ -255,21 +255,21 @@ public class DataAccess implements DataAccessInterface {
 	 * @see dataAccess.DataAccessInterface#getOwners(helpers.Unit)
 	 */
 	@Override
-	public List<String[]> getOwners(String unitName) throws SQLException {
-		List<String[]> info = new ArrayList<String[]>();
+	public List<Customer> getOwners(String unitName) throws SQLException {
+		List<Customer> customers = new ArrayList<Customer>();
 		ResultSet query;
 		try {
-			query = query("select distinct c.FirstName, c.LastName, count(c.LastName)" +
+			query = query("select c.FirstName, c.LastName, c.PhoneNumber " +
 					"from Customer c " +
 					"where c.CustomerID = " +
 					"(select s.CustomerID " +
 					"from Schedule s " +
 					"where s.UnitID = " +
 					"(select u.UnitID from Unit u " +
-					"where u.unitName like '" + unitName + "'));");
+					"where u.name = " + unitName + "))");
 			while (query.next()) {
-				info.add(new String[] {query.getString(1),
-						query.getString(2), query.getString(3)});
+				customers.add(new Customer(query.getString(1),
+						query.getString(2), query.getString(3)));
 			}
 		} catch (SQLException e) {
 			System.err.println("Could not get the list of customers owning " +
@@ -277,7 +277,7 @@ public class DataAccess implements DataAccessInterface {
 			e.printStackTrace();
 			return null;
 		}
-		return info;
+		return customers;
 	}
 
 	/*
@@ -286,9 +286,14 @@ public class DataAccess implements DataAccessInterface {
 	 * @see dataAccess.DataAccessInterface#getCustomers(int)
 	 */
 	@Override
-	public List<Unit> getCustomers(int week) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> getCustomers(int week) throws SQLException {
+		List<String> result = new ArrayList<String>();
+		ResultSet query = query("SELECT `FirstName`,`LastName`,`UnitName`,`UnitNumber` FROM Schedule s " +
+				"INNER JOIN Customer c, Unit u WHERE s.UnitID=u.UnitID AND s.CustomerID=c.CustomerID AND `Week`="+week);
+		while(query.next()){
+			result.add(String.format("%s, %s - %s: %s",query.getString(2),query.getString(1),query.getString(3),query.getString(4)));
+		}
+		return result;
 	}
 
 	// ///////////////////////////////////////////////////////////////
@@ -301,6 +306,11 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public boolean createUser(Customer customer) throws SQLException {
+		ResultSet query = query("SELECT COUNT(`FirstName`) FROM `Customer` WHERE `FirstName`='"+ customer.getFirstName()
+				+ "' AND `LastName`='" + customer.getLastName()+"'");
+		query.next();
+		//Checks to see if the customer exists
+		if(Integer.parseInt(query.getString(1))>0) return false;
 		return execute("INSERT INTO `Customer` (`FirstName`,`LastName`,`PhoneNumber`) VALUES ('"
 				+ customer.getFirstName()
 				+ "','"
@@ -315,6 +325,11 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public boolean createUnit(Unit unit) throws SQLException {
+		ResultSet query = query("SELECT COUNT(`UnitName`) FROM `Customer` WHERE `UnitName`='"+ unit.getUnitName()
+				+ "' AND `UnitNumber`='" + unit.getUnitNumber() + "'");
+		query.next();
+		//Checks to see if the unit already exists
+		if(Integer.parseInt(query.getString(1))>0) return false;
 		return execute("INSERT INTO `Unit` (`UnitName`,`UnitNumber`,`MaxWeeks`,"
 				+ "`AnualMaintenenceCost`,`MaintenenceShare`) VALUES ('"
 				+ unit.getUnitName()
@@ -334,6 +349,16 @@ public class DataAccess implements DataAccessInterface {
 	 */
 	@Override
 	public boolean createTimeShare(TimeShare timeshare) throws SQLException {
+		ResultSet shares = query("SELECT COUNT(`Week`) FROM `Schedule`  WHERE `CustomerID`=" +
+				"(SELECT `CustomerID` FROM `Customer` WHERE `FirstName`='First 1' AND `LastName`='Last 1') " +
+				"AND `UnitID`=(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='Comstock' AND `UnitNumber`='11')");
+		ResultSet max = query("SELECT `MaxWeeks` FROM `Unit` WHERE `UnitName`='Comstock' AND `UnitNumber`='11'");
+		//Queue up the values
+		shares.next();
+		max.next();
+		//Checks to see if the user already has more then the max number of weeks allowed
+		if(Integer.parseInt(shares.getString(1)) >= Integer.parseInt(max.getString(1))) return false;
+		
 		return execute("INSERT INTO `Schedule` (`UnitID`,`CustomerID`,`Week`) VALUES ("
 				// Gets the unit id from the database
 				+ "(SELECT `UnitId` FROM `Unit` WHERE `UnitName`='"
@@ -360,4 +385,3 @@ public class DataAccess implements DataAccessInterface {
 		return instance;
 	}
 }
-

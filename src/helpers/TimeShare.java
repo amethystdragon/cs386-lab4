@@ -88,4 +88,8 @@ public class TimeShare {
 		this.firstName = customer.getFirstName();
 		this.lastName = customer.getLastName();
 	}
+	@Override
+	public String toString(){
+		return customer.toString()+" - "+unit.toString();
+	}
 }
