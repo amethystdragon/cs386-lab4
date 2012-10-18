@@ -171,7 +171,7 @@ public class GUIAccess extends JFrame {
 
 		// Must add actionListeners to these buttons. Might only need 1 that
 		// uses switch-case
-		menuItem = new JMenuItem("Unit Owners");
+		menuItem = new JMenuItem("Owners of Unit");
 		menuItem.setToolTipText("Names of people who own at least that many weeks in the particular unit.");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
@@ -405,14 +405,14 @@ public class GUIAccess extends JFrame {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				String result = "";
+				String result = "Customer Last Name, First Name - Unit Name: Unit Number\n";
 				String week = JOptionPane
 						.showInputDialog("Please input a week number (1-52)");
 				try {
 					List<String> customers = DataAccess.getInstance()
 							.getCustomers(Integer.parseInt(week));
 					for (String s : customers) {
-						result += s;
+						result += s+'\n';
 					}
 				} catch (NumberFormatException | ClassNotFoundException
 						| SQLException e) {
