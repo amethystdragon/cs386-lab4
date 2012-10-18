@@ -235,7 +235,7 @@ public class DataAccess implements DataAccessInterface {
 					+ "' AND `UnitNumber`='"
 					+ unit.getUnitNumber()
 					+ "'"
-					+ ") GROUP BY `Schedule`.`CustomerID` HAVING COUNT(Week) > 1");
+					+ ") GROUP BY `Schedule`.`CustomerID` HAVING COUNT(Week) > 0)");
 			while (query.next()) {
 				customers.add(new Customer(query.getString(1), query
 						.getString(2), null));
