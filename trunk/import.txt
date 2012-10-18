@@ -1,0 +1,6 @@
+==Customers==
+ FirstName,LastName,PhoneNumber
+==Unit==
+UnitName,UnitNumber,MaxWeeks,AnualMaintenenceCost,MaintenenceShare
+==Timeshares==
+FirstName,LastName,UnitName,UnitNumber,Week

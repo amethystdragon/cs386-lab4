@@ -48,4 +48,8 @@ public class Unit {
 	public void setMaintenenceShare(int maintenenceShare) {
 		this.maintenenceShare = maintenenceShare;
 	}
+	@Override
+	public String toString(){
+		return unitName+":"+unitNumber;
+	}
 }

@@ -1,11 +1,11 @@
 package dataAccess;
 
 import helpers.Customer;
+import helpers.DataParser;
 import helpers.TimeShare;
 import helpers.Unit;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -66,9 +66,8 @@ public class GUIAccess extends JFrame{
 		menu = new JMenu("Import");
 		menuBar.add(menu);
 
-		// TODO For importing
-		// Didn't know if we wanted something like this, so I just added it in
-		// We can change this later if we want
+		
+		// IMPORTING
 		menuItem = new JMenuItem("Select File...");
 		menuItem.setToolTipText("Choose the file in which you would like to read data from.");
 		menuItem.addActionListener(new ActionListener() {
@@ -76,20 +75,54 @@ public class GUIAccess extends JFrame{
 			public void actionPerformed(ActionEvent ae) {
 				File file;
 				JFileChooser chooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("TXT", "txt");
-				chooser.setFileFilter(filter);
+				chooser.setFileFilter(new FileNameExtensionFilter("TXT", "txt"));
 				int returnVal = chooser.showOpenDialog(null);
 
+				JTextArea text = new JTextArea();
+				
 				if(returnVal == JFileChooser.APPROVE_OPTION) {
-					System.out.println("You chose to open this file: " + chooser.getSelectedFile().getName());
 					file = chooser.getSelectedFile();
-					int length = file.getName().length();
-					if(file.getName().substring(length-3).matches("txt")) {
-						// TODO
-						System.out.println("Success!");
-					} else {
-						JOptionPane.showMessageDialog(null, "Invalid File Type");
+					//Parses the file for each unit, customer, and timeshare
+					List<Unit> units = DataParser.parseUnit(file);
+					List<Customer> customers = DataParser.parseCustomer(file);
+					List<TimeShare> timeshares = DataParser.parseShares(file);
+
+					//Adds each unit to the database and the text field
+					text.setText(text.getText()+"==Unit==\n");
+					try {
+						for(Unit u : units){
+							DataAccess.getInstance().createUnit(u);
+							text.setText(text.getText()+"Parsed: "+u.toString()+'\n');
+						}
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()+"Unable to parse units!\n");
 					}
+					
+					//Adds each customer to the database and the text field
+					text.setText(text.getText()+"==Customer==\n");
+					try {
+						for(Customer c : customers){
+							DataAccess.getInstance().createUser(c);
+							text.setText(text.getText()+"Parsed: "+c.toString()+'\n');
+						}
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()+"Unable to parse customers!\n");
+					}
+					
+					//Adds each timeshare to the database and the text field
+					text.setText(text.getText()+"==Timeshare==\n");
+					try {
+						for(TimeShare t : timeshares){
+							DataAccess.getInstance().createTimeShare(t);
+							text.setText(text.getText()+"Parsed: "+t.toString()+'\n');
+						}
+					} catch (ClassNotFoundException | SQLException e) {
+						text.setText(text.getText()+"Unable to parse timeshares!\n");
+					}
+					
+					//Adds the frame to the window
+					myFrame.add(text, BorderLayout.CENTER);
+					image.setVisible(false);
 				}
 			}
 		});
@@ -164,7 +197,6 @@ public class GUIAccess extends JFrame{
 			}
 		});
 		menuItem.setToolTipText("Displays the unit names, numbers and weeks owned by particular customer.");
-		menuItem.setArmed(true);
 		menu.add(menuItem);
 
 		// Names the customers that own at least one week in a particular unit
@@ -184,15 +216,15 @@ public class GUIAccess extends JFrame{
 			        String results = "For Unit: " + unitName + "\n";
 			        results += String.format("%-55s %-55s %-15s \n", col1, col2, col3); 
 			        List<String[]> data = null;
-			        try {
-						data = dataAccess.getOwners(unitName);
-						if(data != null){
-				        	for(String[] str : data){
-				        		results += String.format("%-55s %-55s %-15s \n", str[0], str[1], str[2]);
-				        	}
-						}
-					} catch (SQLException sqle) {JOptionPane.showMessageDialog(null, "Error in search");
-					sqle.printStackTrace();}
+//			        try {
+//						data = dataAccess.getOwners(unitName);
+//						if(data != null){
+//				        	for(String[] str : data){
+//				        		results += String.format("%-55s %-55s %-15s \n", str[0], str[1], str[2]);
+//				        	}
+//						}
+//					} catch (SQLException sqle) {JOptionPane.showMessageDialog(null, "Error in search");
+//					sqle.printStackTrace();}
 			        
 			        if(resultsPanel == null || resultTextArea == null){
 						resultsPanel = new JPanel();
@@ -206,16 +238,40 @@ public class GUIAccess extends JFrame{
 			}
 		});
 		menuItem.setToolTipText("Names the people who own one or more weeks in a particular unit.");
-		menuItem.setArmed(true);
 		menu.add(menuItem);
-		
+
+		menuItem = new JMenuItem("Unit");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				// TODO Update when method is completed
+			}
+		});
+		menu.add(menuItem);
 
 		menuItem = new JMenuItem("Week Shares");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				JTextArea text = new JTextArea();
+				String week = JOptionPane.showInputDialog("Please input a week number (1-52)");
+				try {
+					List<String> customers = DataAccess.getInstance().getCustomers(Integer.parseInt(week));
+					for(String s : customers){
+						text.setText(text.getText()+s);
+					}
+				} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
+					text.setText("Was unable to get a list of the customers for week: "+week+'\n');
+					e.printStackTrace();
+				}
+				myFrame.add(text, BorderLayout.CENTER);
+				image.setVisible(false);
+			}
+		});
 		menu.add(menuItem);
 
 		myFrame.setJMenuBar(menuBar);
-		//myFrame.pack();
-		myFrame.setResizable(false);
+		myFrame.pack();
 		myFrame.setVisible(true);
 	}
 

@@ -1,0 +1,24 @@
+==Customers==
+First 1,Last 1,4140000001
+First 2,Last 2,4140000002
+First 3,Last 3,4140000003
+First 4,Last 4,4140000004
+==Unit==
+Comstock,11,3,45,5
+Comstock,12,3,45,5
+Comstock,13,3,45,5
+Marshall,1,5,50,10
+Marshall,2,5,50,10
+Marshall,3,5,50,10
+Marshall,4,5,50,10
+==Timeshares==
+First 1,Last 1,Comstock,11,5
+First 1,Last 1,Comstock,11,6
+First 1,Last 1,Comstock,11,7
+First 2,Last 2,Comstock,11,8
+First 2,Last 2,Marshall,1,45
+First 3,Last 3,Marshall,1,32
+First 3,Last 3,Marshall,1,33
+First 3,Last 3,Marshall,1,34
+First 4,Last 4,Comstock,13,42
+First 4,Last 4,Marshall,3,43
